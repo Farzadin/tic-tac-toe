@@ -1,9 +1,13 @@
-const gameBoard = (() => {
+const gameBoardModule = (() => {
   const board = [
     ['', '', ''],
     ['', '', ''],
     ['', '', ''],
   ];
+
+  const updateBoard = (row, col, symbol) => {
+    board[row][col] = symbol;
+  };
 
   const displayBoard = () => {
     for (let row = 0; row < board.length; row += 1) {
@@ -15,39 +19,43 @@ const gameBoard = (() => {
     }
   };
 
-  return { displayBoard, board };
+  return { displayBoard, board, updateBoard };
 })();
 
-const createPlayer = (name, symbol, turn) => ({name, symbol, turn})
-const player1 = createPlayer('Player 1', 'X', true);
-const player2 = createPlayer('Player 2', 'O', false);
+const playerModule = (() => {
+  const createPlayer = (name, symbol, turn) => ({ name, symbol, turn });
 
-// Get all the boxes on the game board
-const boxes = document.querySelectorAll('.box');
+  const player1 = createPlayer('Player 1', 'X', true);
+  const player2 = createPlayer('Player 2', 'O', false);
 
-function handleBoxClick(event) {
-  // Get the row and column of the clicked box
-  const row = event.target.classList[1].charAt(1);
-  const col = event.target.classList[1].charAt(3);
+  const switchTurns = () => {
+    player1.turn = !player1.turn;
+    player2.turn = !player2.turn;
+  };
 
-  // Check if the box is empty and it's the current player's turn
-  if (gameBoard.board[row][col] === '' && player1.turn) {
-    // Update the game board and change turns
-    gameBoard.board[row][col] = player1.symbol;
-    player1.turn = false;
-    player2.turn = true;
-  } else if (gameBoard.board[row][col] === '' && player2.turn) {
-    // Update the game board and change turns
-    gameBoard.board[row][col] = player2.symbol;
-    player1.turn = true;
-    player2.turn = false;
-  }
+  return { player1, player2, switchTurns };
+})();
 
-  // Display the updated game board
-  gameBoard.displayBoard();
-}
+const gameControllerModule = (() => {
+  const boxes = document.querySelectorAll('.box');
 
-// Add a click event listener to each box
-boxes.forEach(box => {
-  box.addEventListener('click', handleBoxClick);
-});
+  const handleBoxClick = (event) => {
+    const row = event.target.classList[1].charAt(1);
+    const col = event.target.classList[1].charAt(3);
+
+    const currentPlayer = playerModule.player1.turn
+      ? playerModule.player1
+      : playerModule.player2;
+
+    if (gameBoardModule.board[row][col] === '') {
+      gameBoardModule.updateBoard(row, col, currentPlayer.symbol);
+      playerModule.switchTurns();
+    }
+
+    gameBoardModule.displayBoard();
+  };
+
+  boxes.forEach((box) => {
+    box.addEventListener('click', handleBoxClick);
+  });
+})();

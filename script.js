@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 // The gameBoardModule encapsulates the game board and provides methods for updating and displaying the board, and checking for wins and ties.
 const gameBoardModule = (() => {
   // The game board is represented as a 2D array of strings, with each cell initialized to an empty string.
@@ -114,7 +115,6 @@ const playerModule = (() => {
 })();
 
 // This module handles the logic of the game by defining event listeners for each box on the game board. 
-// eslint-disable-next-line no-unused-vars
 const gameControllerModule = (() => {
   const boxes = document.querySelectorAll('.box');
   const display = document.querySelector('.display');
@@ -132,6 +132,7 @@ const gameControllerModule = (() => {
     if (gameBoardModule.board[row][col] === '') {
       gameBoardModule.updateBoard(row, col, currentPlayer.symbol);
       playerModule.switchTurns();
+      displayModule.showTurn()
     }
 
     // Checks wether the game has ended or not by checking rows, columns and diagonals of the board.
@@ -140,12 +141,10 @@ const gameControllerModule = (() => {
       gameBoardModule.checkCol() ||
       gameBoardModule.checkDiag()
     ) {
-      display.textContent = `Game Over! ${currentPlayer.name} Wins!`;
-      // eslint-disable-next-line no-use-before-define
+      displayModule.showWinner(currentPlayer)
       gameOver();
     } else if (gameBoardModule.isTie()) {
-      display.textContent = 'Game Over! Tie!';
-      // eslint-disable-next-line no-use-before-define
+      displayModule.showTie()
       gameOver();
     }
 
@@ -162,3 +161,23 @@ const gameControllerModule = (() => {
     box.addEventListener('click', handleBoxClick);
   });
 })();
+
+// Display Module handles the logic of displaying the game status and the winner.
+const displayModule = (() => {
+  const display = document.querySelector('.display')
+  display.textContent = "It's Player X's Turn!"
+
+  const showTurn = () => {
+    display.textContent = `It's ${playerModule.player1.turn ? 'Player X' : 'Player O'}'s Turn!`;
+  }
+  
+  const showWinner = (player) => {
+    display.textContent = `Game Over! ${player.name} Wins!`;
+  }
+
+  const showTie = () => {
+      display.textContent = 'Game Over! Tie!';
+  }
+
+  return {showTie, showWinner, showTurn}
+})()

@@ -26,6 +26,26 @@ const gameBoardModule = (() => {
     }
   };
 
+  // Reset the game into its initial state
+  const resetGame = () => {
+    for (let row = 0; row < board.length; row += 1) {
+      for (let col = 0; col < board[row].length; col += 1) {
+        const cell = document.querySelector(`.r${row}c${col}`);
+        cell.textContent = '';
+        board[row][col] = '';
+      }
+    }
+    playerModule.player1.turn = true;
+    playerModule.player2.turn = false;
+    displayModule.display.textContent = "It's Player X's Turn!";
+    gameControllerModule.boxes.forEach((box) => {
+      box.addEventListener('click', gameControllerModule.handleBoxClick);
+    });
+  };
+
+  const resetButton = document.querySelector('.reset');
+  resetButton.addEventListener('click', resetGame);
+
   // Checks whether the game has ended in a tie by checking whether all cells are non-empty.
   const isTie = () => {
     for (let row = 0; row < board.length; row += 1) {
@@ -93,6 +113,7 @@ const gameBoardModule = (() => {
     checkRow,
     checkCol,
     checkDiag,
+    resetGame,
   };
 })();
 
@@ -114,10 +135,9 @@ const playerModule = (() => {
   return { player1, player2, switchTurns };
 })();
 
-// This module handles the logic of the game by defining event listeners for each box on the game board. 
+// This module handles the logic of the game by defining event listeners for each box on the game board.
 const gameControllerModule = (() => {
   const boxes = document.querySelectorAll('.box');
-  const display = document.querySelector('.display');
 
   const handleBoxClick = (event) => {
     // Determines the row and column of the clicked box by accessing the by class names of the box element.
@@ -132,7 +152,7 @@ const gameControllerModule = (() => {
     if (gameBoardModule.board[row][col] === '') {
       gameBoardModule.updateBoard(row, col, currentPlayer.symbol);
       playerModule.switchTurns();
-      displayModule.showTurn()
+      displayModule.showTurn();
     }
 
     // Checks wether the game has ended or not by checking rows, columns and diagonals of the board.
@@ -141,10 +161,10 @@ const gameControllerModule = (() => {
       gameBoardModule.checkCol() ||
       gameBoardModule.checkDiag()
     ) {
-      displayModule.showWinner(currentPlayer)
+      displayModule.showWinner(currentPlayer);
       gameOver();
     } else if (gameBoardModule.isTie()) {
-      displayModule.showTie()
+      displayModule.showTie();
       gameOver();
     }
 
@@ -160,24 +180,27 @@ const gameControllerModule = (() => {
   boxes.forEach((box) => {
     box.addEventListener('click', handleBoxClick);
   });
+  return { boxes, handleBoxClick };
 })();
 
 // Display Module handles the logic of displaying the game status and the winner.
 const displayModule = (() => {
-  const display = document.querySelector('.display')
-  display.textContent = "It's Player X's Turn!"
+  const display = document.querySelector('.display');
+  display.textContent = "It's Player X's Turn!";
 
   const showTurn = () => {
-    display.textContent = `It's ${playerModule.player1.turn ? 'Player X' : 'Player O'}'s Turn!`;
-  }
-  
+    display.textContent = `It's ${
+      playerModule.player1.turn ? 'Player X' : 'Player O'
+    }'s Turn!`;
+  };
+
   const showWinner = (player) => {
     display.textContent = `Game Over! ${player.name} Wins!`;
-  }
+  };
 
   const showTie = () => {
-      display.textContent = 'Game Over! Tie!';
-  }
+    display.textContent = 'Game Over! Tie!';
+  };
 
-  return {showTie, showWinner, showTurn}
-})()
+  return { display, showTie, showWinner, showTurn };
+})();
